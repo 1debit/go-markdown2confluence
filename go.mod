@@ -3,6 +3,7 @@ module github.com/justmiles/go-markdown2confluence
 go 1.12
 
 require (
+	github.com/gernest/front v0.0.0-20210301115436-8a0b0a782d0a
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/justmiles/go-confluence v0.0.0-20200317030333-268fb6ceafbd
 	github.com/naminomare/gogutil v0.0.0-20200209041509-fa8142286c1b // indirect

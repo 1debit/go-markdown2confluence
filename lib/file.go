@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strings"
+	"bytes"
 
 	"github.com/justmiles/go-confluence"
+	"github.com/gernest/front"
 )
 
 // MarkdownFile contains information about the file to upload
@@ -41,7 +43,12 @@ func (f *MarkdownFile) Upload(m *Markdown2Confluence) (urlPath string, err error
 		fmt.Println(f.Path)
 	}
 
-	wikiContent := string(dat)
+	matterParser := front.NewMatter()
+	matterParser.Handle("---", front.YAMLHandler)
+	frontMatter, wikiContent, err := matterParser.Parse(bytes.NewReader(dat))
+	if err != nil {
+		return urlPath, fmt.Errorf("Could not parse file %s:\n\t%s", f.Path, err)
+	}
 	var images []string
 	wikiContent, images, err = renderContent(f.Path, wikiContent, m.WithHardWraps)
 
@@ -59,9 +66,23 @@ func (f *MarkdownFile) Upload(m *Markdown2Confluence) (urlPath string, err error
 		}
 	}
 
+	var docTitle string;
+	docTitle, exists := frontMatter["title"].(string)
+	if !exists {
+		docTitle = f.Title
+	}
+
+	var labels []string;
+	if vals, ok := frontMatter["tags"].([]interface{}); ok {
+		for _, v := range vals {
+			labels = append(labels, fmt.Sprintf("%s", v))
+		}
+	}
+	
+
 	// search for existing page
 	contentResults, err := m.client.GetContent(&confluence.GetContentQueryParameters{
-		Title:    f.Title,
+		Title:    docTitle,
 		Spacekey: m.Space,
 		Limit:    1,
 		Type:     "page",
@@ -105,7 +126,7 @@ func (f *MarkdownFile) Upload(m *Markdown2Confluence) (urlPath string, err error
 	} else {
 
 		bp := confluence.CreateContentBodyParameters{}
-		bp.Title = f.Title
+		bp.Title = docTitle
 		bp.Type = "page"
 		bp.Space.Key = m.Space
 		bp.Body.Storage.Representation = "storage"
@@ -124,6 +145,12 @@ func (f *MarkdownFile) Upload(m *Markdown2Confluence) (urlPath string, err error
 		urlPath = m.client.Endpoint + content.Links.Tinyui
 		currContentID = content.ID
 	}
+	
+	if labels != nil {
+		if errors := m.client.AddLabels(currContentID, labels, ""); errors != nil{
+			fmt.Println("error uploading labels: %s", errors)
+		}
+	}	
 
 	_, errors := m.client.AddUpdateAttachments(currContentID, images)
 	if len(errors) > 0 {
