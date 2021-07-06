@@ -168,10 +168,12 @@ func (m *Markdown2Confluence) Run() []error {
 
 						if strings.HasSuffix(path, "README.md") {
 							tempTitle = strings.Split(path, "/")[len(strings.Split(path, "/"))-2]
-							tempParents = deleteFromSlice(deleteFromSlice(strings.Split(filepath.Dir(strings.TrimPrefix(filepath.ToSlash(path), filepath.ToSlash(f))), "/"), "."), tempTitle)
+							// tempParents = deleteFromSlice(deleteFromSlice(strings.Split(filepath.Dir(strings.TrimPrefix(filepath.ToSlash(path), filepath.ToSlash(f))), "/"), "."), tempTitle)
+							tempParents = getParentsFromPath(path)
 						} else {
 							tempTitle = strings.TrimSuffix(filepath.Base(path), ".md")
-							tempParents = deleteFromSlice(strings.Split(filepath.Dir(strings.TrimPrefix(filepath.ToSlash(path), filepath.ToSlash(f))), "/"), ".")
+							// tempParents = deleteFromSlice(strings.Split(filepath.Dir(strings.TrimPrefix(filepath.ToSlash(path), filepath.ToSlash(f))), "/"), ".")
+							tempParents = getParentsFromPath(path)
 						}
 
 						if m.UseDocumentTitle == true {
@@ -351,4 +353,18 @@ func getDocumentTitle(p string) string {
 	}
 
 	return ""
+}
+
+func getParentsFromPath(path string) []string {
+	var parents []string;
+	dir, _ := filepath.Split(path)
+	if dir == "" {
+		return parents
+	}
+	splitDir := strings.Split(strings.TrimSuffix(filepath.Clean(dir), "/"), "/")
+	for idx, _ := range splitDir {
+		fqParentName := strings.Join(splitDir[:idx+1], " / ")
+		parents = append(parents, fqParentName)
+	}
+	return parents
 }

@@ -151,7 +151,7 @@ func (f *MarkdownFile) Upload(m *Markdown2Confluence) (urlPath string, err error
 	
 	if labels != nil {
 		if errors := m.client.AddLabels(currContentID, labels, ""); errors != nil{
-			fmt.Println("error uploading labels: %s", errors)
+			fmt.Println("error uploading labels:", errors)
 		}
 	}	
 
