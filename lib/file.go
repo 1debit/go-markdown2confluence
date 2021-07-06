@@ -47,8 +47,11 @@ func (f *MarkdownFile) Upload(m *Markdown2Confluence) (urlPath string, err error
 	matterParser.Handle("---", front.YAMLHandler)
 	frontMatter, wikiContent, err := matterParser.Parse(bytes.NewReader(dat))
 	if err != nil {
-		return urlPath, fmt.Errorf("Could not parse file %s:\n\t%s", f.Path, err)
+		// just parse regular file if front matter not present
+		wikiContent = string(dat)
 	}
+
+	
 	var images []string
 	wikiContent, images, err = renderContent(f.Path, wikiContent, m.WithHardWraps)
 
