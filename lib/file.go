@@ -74,6 +74,7 @@ func (f *MarkdownFile) Upload(m *Markdown2Confluence) (urlPath string, err error
 	if !exists {
 		docTitle = f.Title
 	}
+	docTitle = strings.TrimSpace(docTitle)
 
 	var labels []string;
 	if vals, ok := frontMatter["tags"].([]interface{}); ok {
