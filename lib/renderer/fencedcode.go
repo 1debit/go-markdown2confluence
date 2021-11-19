@@ -54,13 +54,13 @@ func (r *ConfluenceFencedCodeBlockHTMLRender) renderConfluenceFencedCode(w util.
 				s = s + `<ac:parameter ac:name="language">` + langString + `</ac:parameter>`
 			}
 
-			s = s + `<ac:plain-text-body><![CDATA[ `
+			s = s + `<ac:plain-text-body><![CDATA[`
 			_, _ = w.WriteString(s)
 			r.writeLines(w, source, n)
 		}
 	} else if langString != "CONFLUENCE-MACRO" {
 		// No special handling for the CONFLUENCE-MACRO, just for the code macros
-		s := ` ]]></ac:plain-text-body></ac:structured-macro>`
+		s := `]]></ac:plain-text-body></ac:structured-macro>`
 		_, _ = w.WriteString(s)
 	}
 	return ast.WalkContinue, nil
